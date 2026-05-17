@@ -7,11 +7,40 @@ fontSize = 4
 
 asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUXYzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
 
+darkMode = False
+
 def fullscreenator(event=None):
     stateAtual = rootWindow.attributes('-fullscreen')
     newState = not stateAtual
     rootWindow.attributes('-fullscreen', newState)
 
+def changeTheme(event=None):
+    global darkMode, asciiChars, asciiImage
+    
+    darkMode = not darkMode
+    
+    
+    asciiChars = asciiChars[::-1]
+    
+    
+    asciiImage = ""
+    for i in range(len(pixelsList)):
+        index = pixelsList[i] * (len(asciiChars) - 1) // 255
+        asciiImage += asciiChars[index]
+        if (i + 1) % asciiColumns == 0:
+            asciiImage += "\n"
+            
+    
+    if darkMode:
+        asciiTextWidget.config(bg="black", fg="white")
+        rootWindow.config(bg="black")
+    else:
+        asciiTextWidget.config(bg="white", fg="black")
+        rootWindow.config(bg="white")
+        
+    
+    asciiTextWidget.delete("1.0", tk.END)
+    asciiTextWidget.insert("1.0", asciiImage)
     
     if newState:
         scrollY.pack_forget()
@@ -76,6 +105,7 @@ for i in range(len(pixelsList)):
 rootWindow.deiconify()
 rootWindow.title("Leshitex")
 rootWindow.bind("<space>", fullscreenator)
+rootWindow.bind("<d>", changeTheme)
 rootWindow.bind("<Escape>", exit)
 rootWindow.geometry(f"{originalWidth}x{originalHeight}")
 rootWindow.resizable(True, True)
