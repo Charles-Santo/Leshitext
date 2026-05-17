@@ -1,12 +1,43 @@
 from tkinter import filedialog
 import tkinter as tk
 from PIL import Image
+import ctypes
 
 fontSize = 4
 
 asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUXYzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
 
+def fullscreenator(event=None):
+    stateAtual = rootWindow.attributes('-fullscreen')
+    newState = not stateAtual
+    rootWindow.attributes('-fullscreen', newState)
+
+    
+    if newState:
+        scrollY.pack_forget()
+        scrollX.pack_forget()
+        asciiTextWidget.pack_forget()
+        asciiTextWidget.pack(expand=True, fill="both")
+    else:
+        asciiTextWidget.pack_forget()
+        scrollY.pack_forget()
+        scrollX.pack_forget()
+
+        scrollY.pack(side="right", fill="y")
+        scrollX.pack(side="bottom", fill="x")
+        asciiTextWidget.pack(expand=True, fill="both")
+
 rootWindow = tk.Tk()
+
+try:
+    myappid = 'project.leshitex.vesion.0.1'
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except:
+    pass
+
+icon = tk.PhotoImage(file="assets/image/Leshitext_icon.png")
+rootWindow.iconphoto(True, icon)
+
 rootWindow.withdraw()
 
 filePath = filedialog.askopenfilename(
@@ -20,7 +51,6 @@ if not filePath:
     exit()
 
 originalImage = Image.open(filePath)
-
 originalWidth, originalHeight = originalImage.size
 
 characterWidth = fontSize * 0.6
@@ -38,35 +68,43 @@ pixelsList = list(processedImage.getdata())
 asciiImage = ""
 
 for i in range(len(pixelsList)):
-
     index = pixelsList[i] * (len(asciiChars) - 1) // 255
-
     asciiImage += asciiChars[index]
-
     if (i + 1) % asciiColumns == 0:
         asciiImage += "\n"
 
 rootWindow.deiconify()
-rootWindow.title("ASCIINATOR")
-rootWindow.attributes('-fullscreen', True)
+rootWindow.title("Leshitex")
+rootWindow.bind("<space>", fullscreenator)
 rootWindow.bind("<Escape>", exit)
 rootWindow.geometry(f"{originalWidth}x{originalHeight}")
-rootWindow.resizable(False, False)
+rootWindow.resizable(True, True)
+
+scrollY = tk.Scrollbar(rootWindow, orient="vertical")
+scrollX = tk.Scrollbar(rootWindow, orient="horizontal")
 
 asciiTextWidget = tk.Text(
     rootWindow,
     wrap="none",
     font=("Courier", fontSize),
-    bg="black",
-    fg="white",
+    bg="white",
+    fg="black",
     bd=0,
     padx=0,
     pady=0,
-    highlightthickness=0
+    highlightthickness=0,
+    yscrollcommand=scrollY.set,
+    xscrollcommand=scrollX.set
 )
 
-asciiTextWidget.insert("1.0", asciiImage)
 
+scrollY.config(command=asciiTextWidget.yview)
+scrollX.config(command=asciiTextWidget.xview)
+
+scrollY.pack(side="right", fill="y")
+scrollX.pack(side="bottom", fill="x")
 asciiTextWidget.pack(expand=True, fill="both")
+
+asciiTextWidget.insert("1.0", asciiImage)
 
 rootWindow.mainloop()
